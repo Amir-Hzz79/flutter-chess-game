@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'widgets/chess.dart';
+import '../widgets/chess_board.dart';
 
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
@@ -8,7 +8,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Chess(),
+      body: ChessBoard(),
     );
   }
 }

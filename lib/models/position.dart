@@ -2,6 +2,11 @@ class Position {
   int x;
   int y;
 
+  Position({
+    required this.x,
+    required this.y,
+  });
+
   int get xPlusy => x + y;
 
   bool isEqualPosition(Position anotherPosition) =>
@@ -24,9 +29,4 @@ class Position {
 
   factory Position.copy(Position anotherPosition) =>
       Position(x: anotherPosition.x, y: anotherPosition.y);
-
-  Position({
-    required this.x,
-    required this.y,
-  });
 }

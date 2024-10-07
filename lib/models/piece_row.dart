@@ -8,7 +8,7 @@ class PieceRow extends Iterable {
   List<Piece> pieces;
 
   @override
-  Iterator get iterator => pieces as Iterator;
+  Iterator<Piece> get iterator => pieces.iterator;
 
   Piece operator [](int i) => pieces[i];
 

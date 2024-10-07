@@ -1,17 +1,26 @@
+import 'package:flutter_chess_game/enums/game_state.dart';
+
 import 'board.dart';
 import 'pieces/piece.dart';
 
 class Game {
-  bool isWhiteTurn = true;
-  Piece? selectedPiece;
+  bool get isWhiteTurn =>
+      _currentGameStatus == GameStatus.whiteTurn ||
+      _currentGameStatus == GameStatus.whiteChecked;
 
-  final Board _pieces = Board();
+  GameStatus _currentGameStatus = GameStatus.whiteTurn;
+
+  GameStatus get currentGameStatus => _currentGameStatus;
+
+  Piece? _selectedPiece;
+
+  final Board _board = Board();
 
   final List<Piece> _highLightPieces = [];
 
-  Piece pieceAt({required int x, required int y}) => _pieces[y][x];
+  Piece pieceAt({required int x, required int y}) => _board[y][x];
 
-  Piece pieceAtPosition(Position position) => _pieces[position.y][position.x];
+  Piece pieceAtPosition(Position position) => _board[position.y][position.x];
 
   void addHighlightPieces({
     required Piece selectedPiece,
@@ -40,32 +49,32 @@ class Game {
       );
 
   void selectPiece(Piece selectedPiece) {
-    bool shouldMove = this.selectedPiece != null &&
+    bool shouldMove = _selectedPiece != null &&
         _highLightPieces.isNotEmpty &&
         _highLightPieces.any(
           (element) => element.isEqual(selectedPiece),
         );
 
     if (shouldMove) {
-      move(this.selectedPiece!, selectedPiece);
+      move(_selectedPiece!, selectedPiece);
     } else {
       if (isSelectedPiece(selectedPiece) || selectedPiece.isEmptyPiece) {
         clearBoard();
         return;
       }
 
-      this.selectedPiece = selectedPiece;
+      _selectedPiece = selectedPiece;
 
       addHighlightPieces(
         selectedPiece: selectedPiece,
-        positions: selectedPiece.avaiablePositions(_pieces),
+        positions: selectedPiece.avaiablePositions(_board),
       );
     }
   }
 
-  bool isSelectedPiece(Piece piece) => piece == selectedPiece;
+  bool isSelectedPiece(Piece piece) => piece == _selectedPiece;
 
-  void clearSelectedPiece() => selectedPiece = null;
+  void clearSelectedPiece() => _selectedPiece = null;
 
   void clearBoard() {
     _highLightPieces.clear();
@@ -73,17 +82,49 @@ class Game {
   }
 
   void move(Piece movingPiece, Piece destinationPiece) {
-    _pieces[movingPiece.position.y][movingPiece.position.x] = EmptyPiece(
+    _board[movingPiece.position.y][movingPiece.position.x] = EmptyPiece(
       position: Position.copy(movingPiece.position),
     );
 
     movingPiece.onMove(destinationPiece.position);
 
-    _pieces[destinationPiece.position.y][destinationPiece.position.x] =
+    _board[destinationPiece.position.y][destinationPiece.position.x] =
         movingPiece;
 
     clearBoard();
 
-    isWhiteTurn = !isWhiteTurn;
+    _currentGameStatus = _scanGameStatus(movingPiece.isWhite!);
+  }
+
+  GameStatus _scanGameStatus(bool whiteMovesLast) {
+    if (_isWhiteChecked()) {
+      return _isWhiteMated() ? GameStatus.blackWins : GameStatus.whiteChecked;
+    } else if (_isBlackChecked()) {
+      return _isBlackMated() ? GameStatus.whiteWins : GameStatus.blackChecked;
+    }
+    return whiteMovesLast ? GameStatus.blackTurn : GameStatus.whiteTurn;
+  }
+
+  bool _isWhiteChecked() {
+    Position whiteKingPosition = _board.findPiece<King>(true).first;
+
+    return _board.allBlackSideAvaiablePositions
+        .where(
+          (element) => element.isEqualPosition(whiteKingPosition),
+        )
+        .isNotEmpty;
+  }
+
+  bool _isWhiteMated() => _board.allWhiteSideAvaiablePositions.isEmpty;
+  bool _isBlackMated() => _board.allBlackSideAvaiablePositions.isEmpty;
+
+  bool _isBlackChecked() {
+    Position blackKingPosition = _board.findPiece<King>(false).first;
+
+    return _board.allWhiteSideAvaiablePositions
+        .where(
+          (element) => element.isEqualPosition(blackKingPosition),
+        )
+        .isNotEmpty;
   }
 }

@@ -3,15 +3,15 @@ import '../models/game.dart';
 import '../models/pieces/piece.dart';
 import 'piece_button.dart';
 
-class Chess extends StatefulWidget {
-  const Chess({super.key});
+class ChessBoard extends StatefulWidget {
+  const ChessBoard({super.key});
 
   @override
-  State<Chess> createState() => _ChessState();
+  State<ChessBoard> createState() => _ChessBoardState();
 }
 
-class _ChessState extends State<Chess> {
-  final Game board = Game();
+class _ChessBoardState extends State<ChessBoard> {
+  final Game game = Game();
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,9 @@ class _ChessState extends State<Chess> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Text(game.currentGameStatus.name),
         SizedBox(
-          width: screenSize.width,
+          /* width: screenSize.width, */
           height: screenSize.width,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -34,20 +35,20 @@ class _ChessState extends State<Chess> {
                   children: List.generate(
                     8,
                     (index2) {
-                      Piece piece = board.pieceAt(y: index1, x: index2);
+                      Piece piece = game.pieceAt(y: index1, x: index2);
                       return Expanded(
                         child: PieceButton(
                           piece: piece,
-                          isSelected: board.isSelectedPiece(
+                          isSelected: game.isSelectedPiece(
                             piece,
                           ),
-                          isHighLighted: board.isHighlighted(
+                          isHighLighted: game.isHighlighted(
                             piece,
                           ),
                           onPress: () {
                             setState(
                               () {
-                                board.selectPiece(piece);
+                                game.selectPiece(piece);
                               },
                             );
                           },

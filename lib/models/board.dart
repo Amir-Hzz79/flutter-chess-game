@@ -330,7 +330,7 @@ class Board extends Iterable {
     return whitePieces;
   }
 
-  List<Position> get whiteAvaiablePositions {
+  List<Position> get allWhiteSideAvaiablePositions {
     List<Piece> whitePieces = this.whitePieces;
 
     List<Position> avaiablePositions = [];
@@ -342,7 +342,7 @@ class Board extends Iterable {
     return avaiablePositions;
   }
 
-  List<Position> get blackAvaiablePositions {
+  List<Position> get allBlackSideAvaiablePositions {
     List<Piece> blackPieces = this.blackPieces;
 
     List<Position> avaiablePositions = [];
@@ -352,5 +352,23 @@ class Board extends Iterable {
     }
 
     return avaiablePositions;
+  }
+
+  /// return positions of the matches piece in the board
+  List<Position> findPiece<T>(bool isWhite) {
+    if (T is EmptyPiece) {
+      throw ArgumentError('Cant pass an empty piece');
+    }
+
+    List<Position> foundPiecesPosition = [];
+    for (PieceRow pieceRow in _pieces) {
+      for (Piece piece in pieceRow) {
+        if (piece is T && piece.isWhite! == isWhite) {
+          foundPiecesPosition.add(piece.position);
+        }
+      }
+    }
+
+    return foundPiecesPosition;
   }
 }

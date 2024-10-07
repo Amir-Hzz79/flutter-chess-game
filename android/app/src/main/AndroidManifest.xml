@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chess.my_chess_android">
+    package="com.game.flutter_chess_game">
    <application
-        android:label="my_chess_android"
+        android:label="Chess"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
