@@ -14,6 +14,15 @@ class King extends Piece {
         );
 
   @override
+  King copy() {
+    return King(
+      id: id,
+      isWhite: isWhite,
+      position: position.copy(),
+    );
+  }
+
+  @override
   avaiablePositions(Board board) {
     List<Position> avaiablePositions = [];
 

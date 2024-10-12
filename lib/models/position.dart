@@ -9,6 +9,11 @@ class Position {
 
   int get xPlusy => x + y;
 
+  void update(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+
   bool isEqualPosition(Position anotherPosition) =>
       anotherPosition.x == x && anotherPosition.y == y;
 
@@ -27,6 +32,5 @@ class Position {
     return newPosition;
   }
 
-  factory Position.copy(Position anotherPosition) =>
-      Position(x: anotherPosition.x, y: anotherPosition.y);
+  Position copy() => Position(x: x, y: y);
 }

@@ -14,6 +14,15 @@ class Pawn extends Piece {
         );
 
   @override
+  Pawn copy() {
+    return Pawn(
+      id: id,
+      isWhite: isWhite,
+      position: position.copy(),
+    );
+  }
+
+  @override
   avaiablePositions(Board board) {
     List<Position> avaiablePositions = [];
 

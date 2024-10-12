@@ -2,7 +2,7 @@ import '../board.dart';
 import 'piece.dart';
 
 class Rook extends Piece {
-  Rook({
+  const Rook({
     required super.id,
     required super.isWhite,
     required super.position,
@@ -10,6 +10,15 @@ class Rook extends Piece {
           whiteIcon: 'assets/icons/black_rook.png',
           blackIcon: 'assets/icons/white_rook.png',
         );
+
+  @override
+  Rook copy() {
+    return Rook(
+      id: id,
+      isWhite: isWhite,
+      position: position.copy(),
+    );
+  }
 
   @override
   avaiablePositions(Board board) {
@@ -22,11 +31,14 @@ class Rook extends Piece {
         break;
       }
 
-      avaiablePositions.add(newPosition);
-
       if (board.at(newPosition).isNotEmptyPiece) {
+        if (board.at(newPosition).isNotInSameSide(this)) {
+          avaiablePositions.add(newPosition);
+        }
         break;
       }
+
+      avaiablePositions.add(newPosition);
     }
 
     for (var i = 1; i < 8; i++) {
@@ -36,11 +48,14 @@ class Rook extends Piece {
         break;
       }
 
-      avaiablePositions.add(newPosition);
-
       if (board.at(newPosition).isNotEmptyPiece) {
+        if (board.at(newPosition).isNotInSameSide(this)) {
+          avaiablePositions.add(newPosition);
+        }
         break;
       }
+
+      avaiablePositions.add(newPosition);
     }
 
     for (var i = 1; i < 8; i++) {
@@ -50,11 +65,14 @@ class Rook extends Piece {
         break;
       }
 
-      avaiablePositions.add(newPosition);
-
       if (board.at(newPosition).isNotEmptyPiece) {
+        if (board.at(newPosition).isNotInSameSide(this)) {
+          avaiablePositions.add(newPosition);
+        }
         break;
       }
+
+      avaiablePositions.add(newPosition);
     }
 
     for (var i = 1; i < 8; i++) {
@@ -64,20 +82,16 @@ class Rook extends Piece {
         break;
       }
 
-      avaiablePositions.add(newPosition);
-
       if (board.at(newPosition).isNotEmptyPiece) {
+        if (board.at(newPosition).isNotInSameSide(this)) {
+          avaiablePositions.add(newPosition);
+        }
         break;
       }
+
+      avaiablePositions.add(newPosition);
     }
 
     return avaiablePositions;
   }
-
-  /* @override
-  onMove(Position newPosition) {
-    super.onMove(newPosition);
-
-    isFirstMove = false;
-  } */
 }

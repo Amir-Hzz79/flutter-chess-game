@@ -8,14 +8,13 @@ export 'knight.dart';
 export 'king.dart';
 export 'queen.dart';
 export '../position.dart';
-export '../piece_type.dart';
 export 'empty_piece.dart';
 
 abstract class Piece {
   final String id;
   final String? title;
   final bool? isWhite;
-  Position position;
+  final Position position;
   final String? whiteIcon;
   final String? blackIcon;
 
@@ -25,7 +24,7 @@ abstract class Piece {
           ? blackIcon
           : whiteIcon;
 
-  Piece({
+  const Piece({
     this.id = '',
     this.title,
     this.isWhite,
@@ -53,6 +52,10 @@ abstract class Piece {
     return [];
   }
 
+  Piece? copy() {
+    return null;
+  }
+
   bool isEqual(Piece anotherPiece) =>
       position.isEqualPosition(anotherPiece.position);
 
@@ -66,5 +69,6 @@ abstract class Piece {
   bool canNotAttackBy(Piece anotherPiece) =>
       !isNotEmptyPiece || !isNotInSameSide(anotherPiece);
 
-  void onMove(Position newPosition) => position = Position.copy(newPosition);
+  void onMove(Position newPosition) =>
+      position.update(newPosition.x, newPosition.y);
 }

@@ -12,6 +12,15 @@ class Knight extends Piece {
         );
 
   @override
+  Knight copy() {
+    return Knight(
+      id: id,
+      isWhite: isWhite,
+      position: position.copy(),
+    );
+  }
+
+  @override
   avaiablePositions(Board board) {
     List<Position> avaiablePositions = [];
 
