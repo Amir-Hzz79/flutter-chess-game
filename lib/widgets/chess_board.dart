@@ -38,13 +38,13 @@ class _ChessBoardState extends State<ChessBoard> {
                       Piece piece = game.pieceAt(y: index1, x: index2);
                       return Expanded(
                         child: PieceButton(
-                          piece: piece,
-                          isSelected: game.isSelectedPiece(
+                          highlightPiece: game.getHighlightType(piece),
+                          /* isSelected: game.isSelectedPiece(
                             piece,
                           ),
-                          isHighLighted: game.isHighlighted(
+                          isHighLighted: game.highlightPiece(
                             piece,
-                          ),
+                          ), */
                           onPress: () {
                             setState(
                               () {

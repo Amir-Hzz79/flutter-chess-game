@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
-
-import '../models/pieces/piece.dart';
+import 'package:flutter_chess_game/enums/highlight_types.dart';
+import 'package:flutter_chess_game/models/highlight_piece.dart';
 
 class PieceButton extends StatelessWidget {
   const PieceButton({
     super.key,
-    required this.piece,
+    required this.highlightPiece,
     required this.onPress,
-    required this.isSelected,
-    required this.isHighLighted,
   });
 
-  final Piece piece;
+  final HighlightPiece highlightPiece;
   final void Function() onPress;
-  final bool isSelected;
-  final bool isHighLighted;
 
   Color get generateBackgroundColor {
-    bool odd = piece.position.xPlusy % 2 == 0;
+    bool odd = highlightPiece.piece.position.xPlusy % 2 == 0;
     Color buttonColor = odd ? Colors.black12 : Colors.white10;
 
-    if (isHighLighted) {
-      if (odd) {
-        buttonColor = piece.isNotEmptyPiece ? Colors.green : Colors.amber;
-      } else {
-        buttonColor = piece.isNotEmptyPiece ? Colors.green : Colors.amberAccent;
+    if (highlightPiece.highlightType != HighlightTypes.none) {
+      if (highlightPiece.highlightType == HighlightTypes.self) {
+        buttonColor = Colors.blue;
+      } else if (highlightPiece.highlightType == HighlightTypes.movable) {
+        buttonColor = odd ? Colors.amber : Colors.amberAccent;
+      } else if (highlightPiece.highlightType == HighlightTypes.attackable) {
+        buttonColor = Colors.green;
+      } else if (highlightPiece.highlightType == HighlightTypes.checked) {
+        buttonColor = Colors.purple;
+      } else if (highlightPiece.highlightType == HighlightTypes.checkMate) {
+        buttonColor = Colors.orange;
       }
-    }
-
-    if (isSelected) {
-      buttonColor = Colors.blue;
     }
 
     return buttonColor;
@@ -43,17 +41,17 @@ class PieceButton extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: generateBackgroundColor,
-          image: piece.icon != null
+          image: highlightPiece.piece.icon != null
               ? DecorationImage(
-                  image: AssetImage(piece.icon!),
+                  image: AssetImage(highlightPiece.piece.icon!),
                   fit: BoxFit.cover,
                 )
               : null,
         ),
-        child: piece.title != null
+        child: highlightPiece.piece.title != null
             ? Center(
                 child: Text(
-                  piece.title!,
+                  highlightPiece.piece.title!,
                 ),
               )
             : null,

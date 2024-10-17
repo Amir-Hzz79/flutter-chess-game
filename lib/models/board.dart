@@ -1,3 +1,6 @@
+import 'package:flutter_chess_game/enums/highlight_types.dart';
+import 'package:flutter_chess_game/models/highlight_piece.dart';
+
 import '../enums/game_status.dart';
 import 'piece_row.dart';
 import 'pieces/piece.dart';
@@ -309,7 +312,7 @@ class Board extends Iterable {
 
   List<PieceRow> _pieces = [];
 
-  final List<Piece> _highLightPieces = [];
+  final List<HighlightPiece> _highLightPieces = [];
 
   @override
   Iterator<PieceRow> get iterator => _pieces.iterator;
@@ -318,29 +321,27 @@ class Board extends Iterable {
 
   Piece at(Position position) => this[position.y][position.x];
 
-  bool isHighlighted(Piece piece) => _highLightPieces.any(
-        (element) => element.isEqual(piece),
-      );
+  HighlightPiece getHighlightType(Piece piece) => _highLightPieces
+          .where(
+            (element) => element.piece.isEqual(piece),
+          )
+          .isEmpty
+      ? HighlightPiece(piece: piece, highlightType: HighlightTypes.none)
+      : _highLightPieces
+          .where(
+            (element) => element.piece.isEqual(piece),
+          )
+          .first;
 
   void clearBoard() => _highLightPieces.clear();
 
-  void addHighlightPieces({
-    required Piece selectedPiece,
-    required List<Position> positions,
-  }) {
-    clearBoard();
+  void addHighlightPiece(HighlightPiece highlightPiece) =>
+      _highLightPieces.add(highlightPiece);
 
-    List<Piece> highlightPieces = [];
-
-    for (Position position in positions) {
-      Piece pieceToHighlight = at(position);
-      if (pieceToHighlight.isNotInSameSide(selectedPiece)) {
-        highlightPieces.add(pieceToHighlight);
-      }
-    }
-
-    _highLightPieces.addAll(highlightPieces);
-  }
+  void addHighlightPieces(
+    List<HighlightPiece> highlightPieces,
+  ) =>
+      _highLightPieces.addAll(highlightPieces);
 
   List<Piece> get whitePieces {
     List<Piece> whitePieces = [];
@@ -371,8 +372,6 @@ class Board extends Iterable {
   }
 
   List<Position> get allWhiteSideAvaiablePositions {
-    List<Piece> whitePieces = this.whitePieces;
-
     List<Position> avaiablePositions = [];
 
     for (var piece in whitePieces) {
@@ -383,8 +382,6 @@ class Board extends Iterable {
   }
 
   List<Position> get allBlackSideAvaiablePositions {
-    List<Piece> blackPieces = this.blackPieces;
-
     List<Position> avaiablePositions = [];
 
     for (var piece in blackPieces) {
@@ -395,7 +392,7 @@ class Board extends Iterable {
   }
 
   bool get isWhiteChecked {
-    Position whiteKingPosition = findPiece<King>(true).first;
+    Position whiteKingPosition = findPiece<King>(true).first.position;
 
     return allBlackSideAvaiablePositions
         .where(
@@ -404,17 +401,34 @@ class Board extends Iterable {
         .isNotEmpty;
   }
 
-  bool get isWhiteMated => allWhiteSideAvaiablePositions.isEmpty;
-  bool get isBlackMated => allBlackSideAvaiablePositions.isEmpty;
-
   bool get isBlackChecked {
-    Position blackKingPosition = findPiece<King>(false).first;
+    Position blackKingPosition = findPiece<King>(false).first.position;
 
     return allWhiteSideAvaiablePositions
         .where(
           (element) => element.isEqualPosition(blackKingPosition),
         )
         .isNotEmpty;
+  }
+
+  bool get isWhiteMated {
+    List<Position> avaiablePositions = [];
+
+    for (var piece in whitePieces) {
+      avaiablePositions.addAll(_filterMovesCauseCheck(piece));
+    }
+
+    return avaiablePositions.isEmpty;
+  }
+
+  bool get isBlackMated {
+    List<Position> avaiablePositions = [];
+
+    for (var piece in blackPieces) {
+      avaiablePositions.addAll(_filterMovesCauseCheck(piece));
+    }
+
+    return avaiablePositions.isEmpty;
   }
 
   void move(Piece movingPiece, Piece destinationPiece) {
@@ -435,21 +449,55 @@ class Board extends Iterable {
     clearBoard();
   }
 
+  ///return positions that this piece can uncheck
+  List<Position> _filterMovesCauseCheck(Piece piece) {
+    List<Position> avaiablePositions = piece.avaiablePositions(this);
+    List<Position> movablePositions = [];
+
+    for (var position in avaiablePositions) {
+      GameStatus gameStatusAfterMove =
+          _simulationMove(piece.position.copy(), position.copy());
+
+      bool stillChecked =
+          gameStatusAfterMove == GameStatus.blackChecked && !piece.isWhite! ||
+              gameStatusAfterMove == GameStatus.whiteChecked && piece.isWhite!;
+
+      if (!stillChecked) {
+        movablePositions.add(position);
+      }
+    }
+
+    return movablePositions;
+  }
+
+  ///Simulate moving and return the game status after this move
+  GameStatus _simulationMove(Position origin, Position destination) {
+    Board simulationBoard = copy();
+
+    Piece originPiece = simulationBoard.at(origin);
+    simulationBoard.move(originPiece, simulationBoard.at(destination));
+
+    return simulationBoard.gameStatus(
+      whiteMovesLast: originPiece.isWhite!,
+      scanCheckMates: false,
+    );
+  }
+
   void _placePiece(Position postionToChange, Piece pieceToReplace) {
     _pieces[postionToChange.y][postionToChange.x] = pieceToReplace;
   }
 
   /// return positions of the matches piece type in the board
-  List<Position> findPiece<T>(bool isWhite) {
+  List<Piece> findPiece<T>(bool isWhite) {
     if (T is EmptyPiece) {
       throw ArgumentError('Cant pass an empty piece');
     }
 
-    List<Position> foundPiecesPosition = [];
+    List<Piece> foundPiecesPosition = [];
     for (PieceRow pieceRow in _pieces) {
       for (Piece piece in pieceRow) {
         if (piece is T && piece.isWhite! == isWhite) {
-          foundPiecesPosition.add(piece.position);
+          foundPiecesPosition.add(piece);
         }
       }
     }
@@ -457,13 +505,22 @@ class Board extends Iterable {
     return foundPiecesPosition;
   }
 
-  GameStatus gameStatus(
-    bool whiteMovesLast,
-  ) {
+  GameStatus gameStatus({
+    required bool whiteMovesLast,
+    bool scanCheckMates = true,
+  }) {
     if (isWhiteChecked) {
-      return isWhiteMated ? GameStatus.blackWins : GameStatus.whiteChecked;
+      return scanCheckMates
+          ? isWhiteMated
+              ? GameStatus.blackWins
+              : GameStatus.whiteChecked
+          : GameStatus.whiteChecked;
     } else if (isBlackChecked) {
-      return isBlackMated ? GameStatus.whiteWins : GameStatus.blackChecked;
+      return scanCheckMates
+          ? isBlackMated
+              ? GameStatus.whiteWins
+              : GameStatus.blackChecked
+          : GameStatus.blackChecked;
     }
 
     return whiteMovesLast ? GameStatus.blackTurn : GameStatus.whiteTurn;

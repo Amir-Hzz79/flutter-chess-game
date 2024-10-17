@@ -1,4 +1,6 @@
 import 'package:flutter_chess_game/enums/game_status.dart';
+import 'package:flutter_chess_game/enums/highlight_types.dart';
+import 'package:flutter_chess_game/models/highlight_piece.dart';
 
 import 'board.dart';
 import 'pieces/piece.dart';
@@ -16,37 +18,110 @@ class Game {
 
   GameStatus get currentGameStatus => _currentGameStatus;
 
-  bool get _isSomeoneChecked =>
-      _currentGameStatus == GameStatus.whiteChecked ||
-      _currentGameStatus == GameStatus.blackChecked;
-
   Piece pieceAt({required int x, required int y}) => _board[y][x];
 
-  bool isHighlighted(Piece piece) => _board.isHighlighted(piece);
+  HighlightPiece getHighlightType(Piece piece) =>
+      _board.getHighlightType(piece);
 
   void selectPiece(Piece selectedPiece) {
-    bool shouldMove =
-        _selectedPiece != null && _board.isHighlighted(selectedPiece);
+    bool shouldMove = _selectedPiece != null &&
+        !_selectedPiece!.isEqual(selectedPiece) &&
+        _board.getHighlightType(selectedPiece).canMoveToIt;
 
     if (shouldMove) {
+      _board.addHighlightPiece(
+        HighlightPiece(
+            piece: selectedPiece, highlightType: HighlightTypes.self),
+      );
+
       _board.move(_selectedPiece!, selectedPiece);
-      _currentGameStatus = _board.gameStatus(_selectedPiece!.isWhite!);
-    } else {
-      if (isSelectedPiece(selectedPiece) ||
-          selectedPiece.isEmptyPiece ||
-          isWhiteTurn != selectedPiece.isWhite) {
-        _board.clearBoard();
-        _clearSelectedPiece();
-        return;
-      }
+
+      _currentGameStatus = _board.gameStatus(
+        whiteMovesLast: _selectedPiece!.isWhite!,
+        scanCheckMates: true,
+      );
+
+      _board.clearBoard();
+      _clearSelectedPiece();
+
+      /* if (_currentGameStatus == GameStatus.whiteChecked) {
+        _board.addHighlightPiece(
+          HighlightPiece(
+            piece: _board.findPiece<King>(true).first,
+            highlightType: HighlightTypes.checked,
+          ),
+        );
+      } else if (_currentGameStatus == GameStatus.blackChecked) {
+        _board.addHighlightPiece(
+          HighlightPiece(
+            piece: _board.findPiece<King>(false).first,
+            highlightType: HighlightTypes.checked,
+          ),
+        );
+      } */
+    } else if (!isSelectedPiece(selectedPiece) &&
+        selectedPiece.isNotEmptyPiece &&
+        isWhiteTurn == selectedPiece.isWhite) {
+      _board.clearBoard();
+      _clearSelectedPiece();
 
       List<Position> movablePositions = _filterMovesCauseCheck(selectedPiece);
 
       _selectedPiece = selectedPiece;
 
-      _board.addHighlightPieces(
-        selectedPiece: selectedPiece,
-        positions: movablePositions,
+      _board.addHighlightPiece(
+        HighlightPiece(
+            piece: selectedPiece, highlightType: HighlightTypes.self),
+      );
+
+      for (Position position in movablePositions) {
+        Piece pieceToHighlight = _board.at(position);
+        _board.addHighlightPiece(
+          HighlightPiece(
+            piece: pieceToHighlight,
+            highlightType: pieceToHighlight.isEmptyPiece
+                ? HighlightTypes.movable
+                : HighlightTypes.attackable,
+          ),
+        );
+      }
+    } else {
+      _board.clearBoard();
+      _clearSelectedPiece();
+    }
+
+    _highlightGameStatusPieces();
+  }
+
+  ///Highlight some some pieces base on game status
+  void _highlightGameStatusPieces() {
+    if (_currentGameStatus == GameStatus.whiteChecked) {
+      _board.addHighlightPiece(
+        HighlightPiece(
+          piece: _board.findPiece<King>(true).first,
+          highlightType: HighlightTypes.checked,
+        ),
+      );
+    } else if (_currentGameStatus == GameStatus.blackChecked) {
+      _board.addHighlightPiece(
+        HighlightPiece(
+          piece: _board.findPiece<King>(false).first,
+          highlightType: HighlightTypes.checked,
+        ),
+      );
+    } else if (_currentGameStatus == GameStatus.whiteWins) {
+      _board.addHighlightPiece(
+        HighlightPiece(
+          piece: _board.findPiece<King>(false).first,
+          highlightType: HighlightTypes.checkMate,
+        ),
+      );
+    } else if (_currentGameStatus == GameStatus.blackWins) {
+      _board.addHighlightPiece(
+        HighlightPiece(
+          piece: _board.findPiece<King>(true).first,
+          highlightType: HighlightTypes.checkMate,
+        ),
       );
     }
   }
@@ -78,7 +153,8 @@ class Game {
     simulationBoard.move(originPiece, simulationBoard.at(destination));
 
     return simulationBoard.gameStatus(
-      originPiece.isWhite!,
+      whiteMovesLast: originPiece.isWhite!,
+      scanCheckMates: false,
     );
   }
 
