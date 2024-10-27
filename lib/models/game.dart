@@ -29,12 +29,7 @@ class Game {
         _board.getHighlightType(selectedPiece).canMoveToIt;
 
     if (shouldMove) {
-      _board.addHighlightPiece(
-        HighlightPiece(
-            piece: selectedPiece, highlightType: HighlightTypes.self),
-      );
-
-      _board.move(_selectedPiece!, selectedPiece);
+      _board.move(_selectedPiece!, _board.getHighlightType(selectedPiece));
 
       _currentGameStatus = _board.gameStatus(
         whiteMovesLast: _selectedPiece!.isWhite!,
@@ -43,48 +38,15 @@ class Game {
 
       _board.clearBoard();
       _clearSelectedPiece();
-
-      /* if (_currentGameStatus == GameStatus.whiteChecked) {
-        _board.addHighlightPiece(
-          HighlightPiece(
-            piece: _board.findPiece<King>(true).first,
-            highlightType: HighlightTypes.checked,
-          ),
-        );
-      } else if (_currentGameStatus == GameStatus.blackChecked) {
-        _board.addHighlightPiece(
-          HighlightPiece(
-            piece: _board.findPiece<King>(false).first,
-            highlightType: HighlightTypes.checked,
-          ),
-        );
-      } */
     } else if (!isSelectedPiece(selectedPiece) &&
         selectedPiece.isNotEmptyPiece &&
         isWhiteTurn == selectedPiece.isWhite) {
       _board.clearBoard();
       _clearSelectedPiece();
 
-      List<Position> movablePositions = _filterMovesCauseCheck(selectedPiece);
+      _board.addHighlightPieces(_filterMovesCauseCheck(selectedPiece));
 
       _selectedPiece = selectedPiece;
-
-      _board.addHighlightPiece(
-        HighlightPiece(
-            piece: selectedPiece, highlightType: HighlightTypes.self),
-      );
-
-      for (Position position in movablePositions) {
-        Piece pieceToHighlight = _board.at(position);
-        _board.addHighlightPiece(
-          HighlightPiece(
-            piece: pieceToHighlight,
-            highlightType: pieceToHighlight.isEmptyPiece
-                ? HighlightTypes.movable
-                : HighlightTypes.attackable,
-          ),
-        );
-      }
     } else {
       _board.clearBoard();
       _clearSelectedPiece();
@@ -127,30 +89,33 @@ class Game {
   }
 
   ///return positions that this piece can uncheck
-  List<Position> _filterMovesCauseCheck(Piece piece) {
-    List<Position> avaiablePositions = piece.avaiablePositions(_board);
-    List<Position> movablePositions = [];
-    for (var position in avaiablePositions) {
-      GameStatus gameStatusAfterMove =
-          _simulationMove(piece.position.copy(), position.copy());
+  List<HighlightPiece> _filterMovesCauseCheck(Piece piece) {
+    List<HighlightPiece> avaiablePieces = piece.avaiablePieces(_board);
+    List<HighlightPiece> movablePieces = [];
+    for (var highlightPieces in avaiablePieces) {
+      GameStatus gameStatusAfterMove = _simulationMove(
+        piece,
+        highlightPieces,
+      );
       bool stillChecked =
           gameStatusAfterMove == GameStatus.blackChecked && !isWhiteTurn ||
               gameStatusAfterMove == GameStatus.whiteChecked && isWhiteTurn;
 
       if (!stillChecked) {
-        movablePositions.add(position);
+        movablePieces.add(highlightPieces);
       }
     }
 
-    return movablePositions;
+    return movablePieces;
   }
 
   ///Simulate moving and return the game status after this move
-  GameStatus _simulationMove(Position origin, Position destination) {
+  GameStatus _simulationMove(Piece origin, HighlightPiece destination) {
     Board simulationBoard = _board.copy();
+    Piece originPiece = origin.copy()!;
+    HighlightPiece destinationPiece = destination.copy();
 
-    Piece originPiece = simulationBoard.at(origin);
-    simulationBoard.move(originPiece, simulationBoard.at(destination));
+    simulationBoard.move(originPiece, destinationPiece);
 
     return simulationBoard.gameStatus(
       whiteMovesLast: originPiece.isWhite!,

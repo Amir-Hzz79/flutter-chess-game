@@ -4,5 +4,6 @@ enum HighlightTypes {
   checked,
   checkMate,
   self,
+  castling,
   none,
 }

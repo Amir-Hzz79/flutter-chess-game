@@ -7,8 +7,13 @@ class HighlightPiece {
   final HighlightTypes highlightType;
 
   bool get canMoveToIt =>
-      highlightType == HighlightTypes.movable ||
-      highlightType == HighlightTypes.attackable;
+      highlightType != HighlightTypes.none &&
+          highlightType == HighlightTypes.movable ||
+      highlightType == HighlightTypes.attackable ||
+      highlightType == HighlightTypes.castling;
+
+  HighlightPiece copy() =>
+      HighlightPiece(piece: piece.copy()!, highlightType: highlightType);
 
   const HighlightPiece({required this.piece, required this.highlightType});
 }

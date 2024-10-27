@@ -1,3 +1,6 @@
+import 'package:flutter_chess_game/enums/highlight_types.dart';
+import 'package:flutter_chess_game/models/highlight_piece.dart';
+
 import '../board.dart';
 import 'piece.dart';
 
@@ -48,8 +51,13 @@ abstract class Piece {
       this is Queen ||
       this is Pawn);
 
-  List<Position> avaiablePositions(Board board) {
-    return [];
+  List<HighlightPiece> avaiablePieces(Board board) {
+    return [
+      HighlightPiece(
+        piece: this,
+        highlightType: HighlightTypes.self,
+      ),
+    ];
   }
 
   Piece? copy() {
@@ -69,6 +77,6 @@ abstract class Piece {
   bool canNotAttackBy(Piece anotherPiece) =>
       !isNotEmptyPiece || !isNotInSameSide(anotherPiece);
 
-  void onMove(Position newPosition) =>
-      position.update(newPosition.x, newPosition.y);
+  void onMove(Board board, HighlightPiece newPiece) =>
+      position.update(newPiece.piece.position.x, newPiece.piece.position.y);
 }

@@ -1,3 +1,6 @@
+import 'package:flutter_chess_game/models/highlight_piece.dart';
+
+import '../../enums/highlight_types.dart';
 import '../board.dart';
 import 'piece.dart';
 
@@ -21,8 +24,8 @@ class Queen extends Piece {
   }
 
   @override
-  avaiablePositions(Board board) {
-    List<Position> avaiablePositions = [];
+  avaiablePieces(Board board) {
+    List<HighlightPiece> avaiablePositions = [];
 
     for (var i = 1; i < 8; i++) {
       Position? newPosition = Position.fromOffset(position, i, i);
@@ -33,12 +36,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -50,12 +63,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -67,12 +90,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -84,12 +117,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -101,12 +144,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -118,12 +171,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -135,12 +198,22 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
     for (var i = 1; i < 8; i++) {
@@ -152,14 +225,24 @@ class Queen extends Piece {
 
       if (board.at(newPosition).isNotEmptyPiece) {
         if (board.at(newPosition).isNotInSameSide(this)) {
-          avaiablePositions.add(newPosition);
+          avaiablePositions.add(
+            HighlightPiece(
+              piece: board.at(newPosition),
+              highlightType: HighlightTypes.attackable,
+            ),
+          );
         }
         break;
       }
 
-      avaiablePositions.add(newPosition);
+      avaiablePositions.add(
+        HighlightPiece(
+          piece: board.at(newPosition),
+          highlightType: HighlightTypes.movable,
+        ),
+      );
     }
 
-    return avaiablePositions;
+    return avaiablePositions + super.avaiablePieces(board);
   }
 }

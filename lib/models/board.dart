@@ -321,6 +321,9 @@ class Board extends Iterable {
 
   Piece at(Position position) => this[position.y][position.x];
 
+  bool isEmptyPiece(Position position) => at(position).isEmptyPiece;
+  bool isNotEmptyPiece(Position position) => at(position).isNotEmptyPiece;
+
   HighlightPiece getHighlightType(Piece piece) => _highLightPieces
           .where(
             (element) => element.piece.isEqual(piece),
@@ -371,21 +374,21 @@ class Board extends Iterable {
     return whitePieces;
   }
 
-  List<Position> get allWhiteSideAvaiablePositions {
-    List<Position> avaiablePositions = [];
+  List<HighlightPiece> get allWhiteSideAvaiablePositions {
+    List<HighlightPiece> avaiablePositions = [];
 
     for (var piece in whitePieces) {
-      avaiablePositions.addAll(piece.avaiablePositions(this));
+      avaiablePositions.addAll(piece.avaiablePieces(this));
     }
 
     return avaiablePositions;
   }
 
-  List<Position> get allBlackSideAvaiablePositions {
-    List<Position> avaiablePositions = [];
+  List<HighlightPiece> get allBlackSideAvaiablePositions {
+    List<HighlightPiece> avaiablePositions = [];
 
     for (var piece in blackPieces) {
-      avaiablePositions.addAll(piece.avaiablePositions(this));
+      avaiablePositions.addAll(piece.avaiablePieces(this));
     }
 
     return avaiablePositions;
@@ -396,7 +399,8 @@ class Board extends Iterable {
 
     return allBlackSideAvaiablePositions
         .where(
-          (element) => element.isEqualPosition(whiteKingPosition),
+          (element) =>
+              element.piece.position.isEqualPosition(whiteKingPosition),
         )
         .isNotEmpty;
   }
@@ -406,13 +410,14 @@ class Board extends Iterable {
 
     return allWhiteSideAvaiablePositions
         .where(
-          (element) => element.isEqualPosition(blackKingPosition),
+          (element) =>
+              element.piece.position.isEqualPosition(blackKingPosition),
         )
         .isNotEmpty;
   }
 
   bool get isWhiteMated {
-    List<Position> avaiablePositions = [];
+    List<HighlightPiece> avaiablePositions = [];
 
     for (var piece in whitePieces) {
       avaiablePositions.addAll(_filterMovesCauseCheck(piece));
@@ -422,7 +427,7 @@ class Board extends Iterable {
   }
 
   bool get isBlackMated {
-    List<Position> avaiablePositions = [];
+    List<HighlightPiece> avaiablePositions = [];
 
     for (var piece in blackPieces) {
       avaiablePositions.addAll(_filterMovesCauseCheck(piece));
@@ -431,7 +436,7 @@ class Board extends Iterable {
     return avaiablePositions.isEmpty;
   }
 
-  void move(Piece movingPiece, Piece destinationPiece) {
+  void move(Piece movingPiece, HighlightPiece destinationPiece) {
     _placePiece(
       movingPiece.position,
       EmptyPiece(
@@ -439,10 +444,13 @@ class Board extends Iterable {
       ),
     );
 
-    movingPiece.onMove(destinationPiece.position);
+    movingPiece.onMove(
+      this,
+      destinationPiece,
+    );
 
     _placePiece(
-      destinationPiece.position,
+      destinationPiece.piece.position,
       movingPiece,
     );
 
@@ -450,32 +458,35 @@ class Board extends Iterable {
   }
 
   ///return positions that this piece can uncheck
-  List<Position> _filterMovesCauseCheck(Piece piece) {
-    List<Position> avaiablePositions = piece.avaiablePositions(this);
-    List<Position> movablePositions = [];
+  List<HighlightPiece> _filterMovesCauseCheck(Piece piece) {
+    List<HighlightPiece> avaiablePieces = piece.avaiablePieces(this);
+    List<HighlightPiece> movablepieces = [];
 
-    for (var position in avaiablePositions) {
-      GameStatus gameStatusAfterMove =
-          _simulationMove(piece.position.copy(), position.copy());
+    for (var highlightPiece in avaiablePieces) {
+      GameStatus gameStatusAfterMove = _simulationMove(
+        piece.copy()!,
+        highlightPiece,
+      );
 
       bool stillChecked =
           gameStatusAfterMove == GameStatus.blackChecked && !piece.isWhite! ||
               gameStatusAfterMove == GameStatus.whiteChecked && piece.isWhite!;
 
       if (!stillChecked) {
-        movablePositions.add(position);
+        movablepieces.add(highlightPiece);
       }
     }
 
-    return movablePositions;
+    return movablepieces;
   }
 
   ///Simulate moving and return the game status after this move
-  GameStatus _simulationMove(Position origin, Position destination) {
+  GameStatus _simulationMove(Piece origin, HighlightPiece destination) {
     Board simulationBoard = copy();
+    Piece originPiece = origin.copy()!;
+    HighlightPiece destinationPiece = destination.copy();
 
-    Piece originPiece = simulationBoard.at(origin);
-    simulationBoard.move(originPiece, simulationBoard.at(destination));
+    simulationBoard.move(originPiece, destinationPiece);
 
     return simulationBoard.gameStatus(
       whiteMovesLast: originPiece.isWhite!,

@@ -27,6 +27,8 @@ class PieceButton extends StatelessWidget {
         buttonColor = Colors.purple;
       } else if (highlightPiece.highlightType == HighlightTypes.checkMate) {
         buttonColor = Colors.orange;
+      } else if (highlightPiece.highlightType == HighlightTypes.castling) {
+        buttonColor = Colors.pink;
       }
     }
 
