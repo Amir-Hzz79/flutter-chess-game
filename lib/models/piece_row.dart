@@ -23,4 +23,21 @@ class PieceRow extends Iterable {
 
     return PieceRow(pieces: newPieces);
   }
+
+  /// return positions of the matches piece type in the board
+  List<T> findPiece<T>({bool? isWhite}) {
+    if (T is EmptyPiece) {
+      throw ArgumentError('Cant pass an empty piece');
+    }
+
+    List<T> foundPiecesPosition = [];
+
+    for (Piece piece in pieces) {
+      if (piece is T && (isWhite == null || piece.isWhite! == isWhite)) {
+        foundPiecesPosition.add(piece as T);
+      }
+    }
+
+    return foundPiecesPosition;
+  }
 }

@@ -336,7 +336,29 @@ class Board extends Iterable {
           )
           .first;
 
-  void clearBoard() => _highLightPieces.clear();
+  //TODO: clear base on game status
+  void clearBoard(GameStatus gameStatus) {
+    if (gameStatus == GameStatus.whiteChecked ||
+        gameStatus == GameStatus.blackChecked ||
+        gameStatus == GameStatus.whiteWins ||
+        gameStatus == GameStatus.blackWins) {
+      _highLightPieces.removeWhere(
+        (element) =>
+            element.highlightType != HighlightTypes.checked &&
+            element.highlightType !=
+                HighlightTypes
+                    .checkMate /* &&
+            element.highlightType != HighlightTypes.self */
+        ,
+      );
+    } else if (gameStatus == GameStatus.pawnNeedConvert) {
+      _highLightPieces.removeWhere(
+        (element) => element.highlightType != HighlightTypes.pawnToConvert,
+      );
+    } else {
+      _highLightPieces.clear();
+    }
+  }
 
   void addHighlightPiece(HighlightPiece highlightPiece) =>
       _highLightPieces.add(highlightPiece);
@@ -394,8 +416,12 @@ class Board extends Iterable {
     return avaiablePositions;
   }
 
+  bool get isPawnReachedEnd =>
+      _pieces[0].findPiece<Pawn>().isNotEmpty ||
+      _pieces[7].findPiece<Pawn>().isNotEmpty;
+
   bool get isWhiteChecked {
-    Position whiteKingPosition = findPiece<King>(true).first.position;
+    Position whiteKingPosition = findPiece<King>(isWhite: true).first.position;
 
     return allBlackSideAvaiablePositions
         .where(
@@ -406,7 +432,7 @@ class Board extends Iterable {
   }
 
   bool get isBlackChecked {
-    Position blackKingPosition = findPiece<King>(false).first.position;
+    Position blackKingPosition = findPiece<King>(isWhite: false).first.position;
 
     return allWhiteSideAvaiablePositions
         .where(
@@ -436,8 +462,12 @@ class Board extends Iterable {
     return avaiablePositions.isEmpty;
   }
 
-  void move(Piece movingPiece, HighlightPiece destinationPiece) {
-    _placePiece(
+  GameStatus move({
+    required movingPiece,
+    required HighlightPiece destinationPiece,
+    bool scanCheckMate = true,
+  }) {
+    placePiece(
       movingPiece.position,
       EmptyPiece(
         position: movingPiece.position.copy(),
@@ -449,12 +479,19 @@ class Board extends Iterable {
       destinationPiece,
     );
 
-    _placePiece(
+    placePiece(
       destinationPiece.piece.position,
       movingPiece,
     );
 
-    clearBoard();
+    GameStatus gameStatus = this.gameStatus(
+      whiteMovesLast: movingPiece.isWhite!,
+      scanCheckMates: scanCheckMate,
+    );
+
+    clearBoard(gameStatus);
+
+    return gameStatus;
   }
 
   ///return positions that this piece can uncheck
@@ -468,9 +505,10 @@ class Board extends Iterable {
         highlightPiece,
       );
 
-      bool stillChecked =
-          gameStatusAfterMove == GameStatus.blackChecked && !piece.isWhite! ||
-              gameStatusAfterMove == GameStatus.whiteChecked && piece.isWhite!;
+      bool stillChecked = gameStatusAfterMove ==
+              GameStatus.blackChecked /* && !piece.isWhite! */ ||
+          gameStatusAfterMove ==
+              GameStatus.whiteChecked /* && piece.isWhite! */;
 
       if (!stillChecked) {
         movablepieces.add(highlightPiece);
@@ -486,34 +524,42 @@ class Board extends Iterable {
     Piece originPiece = origin.copy()!;
     HighlightPiece destinationPiece = destination.copy();
 
-    simulationBoard.move(originPiece, destinationPiece);
-
-    return simulationBoard.gameStatus(
-      whiteMovesLast: originPiece.isWhite!,
-      scanCheckMates: false,
+    return simulationBoard.move(
+      movingPiece: originPiece,
+      destinationPiece: destinationPiece,
+      scanCheckMate: false,
     );
   }
 
-  void _placePiece(Position postionToChange, Piece pieceToReplace) {
-    _pieces[postionToChange.y][postionToChange.x] = pieceToReplace;
-  }
+  void placePiece(Position postionToChange, Piece pieceToReplace) =>
+      _pieces[postionToChange.y][postionToChange.x] = pieceToReplace;
 
   /// return positions of the matches piece type in the board
-  List<Piece> findPiece<T>(bool isWhite) {
+  List<T> findPiece<T>({bool? isWhite, int? y}) {
     if (T is EmptyPiece) {
       throw ArgumentError('Cant pass an empty piece');
     }
 
-    List<Piece> foundPiecesPosition = [];
-    for (PieceRow pieceRow in _pieces) {
-      for (Piece piece in pieceRow) {
-        if (piece is T && piece.isWhite! == isWhite) {
-          foundPiecesPosition.add(piece);
+    List<T> foundPiecesPosition = [];
+    for (int i = 0; i < 8; i++) {
+      if (y == null || i == y) {
+        for (Piece piece in _pieces[i]) {
+          if (piece is T && (isWhite == null || piece.isWhite! == isWhite)) {
+            foundPiecesPosition.add(piece as T);
+          }
         }
       }
     }
 
     return foundPiecesPosition;
+  }
+
+  Pawn? pawnReachEnd() {
+    return _pieces[0].findPiece<Pawn>().isNotEmpty
+        ? _pieces[0].findPiece<Pawn>().first
+        : _pieces[7].findPiece<Pawn>().isNotEmpty
+            ? _pieces[7].findPiece<Pawn>().first
+            : null;
   }
 
   GameStatus gameStatus({
@@ -532,6 +578,8 @@ class Board extends Iterable {
               ? GameStatus.whiteWins
               : GameStatus.blackChecked
           : GameStatus.blackChecked;
+    } else if (isPawnReachedEnd) {
+      return GameStatus.pawnNeedConvert;
     }
 
     return whiteMovesLast ? GameStatus.blackTurn : GameStatus.whiteTurn;

@@ -5,5 +5,6 @@ enum HighlightTypes {
   checkMate,
   self,
   castling,
+  pawnToConvert,
   none,
 }

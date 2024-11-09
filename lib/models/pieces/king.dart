@@ -187,13 +187,13 @@ class King extends Piece {
 
     if (newPiece.highlightType == HighlightTypes.castling) {
       board.move(
-        board.at(
+        movingPiece: board.at(
           Position(
             x: newPiece.piece.position.x == 1 ? 0 : 7,
             y: isWhite! ? 7 : 0,
           ),
         ),
-        HighlightPiece(
+        destinationPiece: HighlightPiece(
           piece: board.at(
             Position(
               x: newPiece.piece.position.x == 1 ? 2 : 4,
